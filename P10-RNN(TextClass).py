@@ -10,7 +10,7 @@ BATCH_SIZE = 64
 train_dataset = train_dataset.shuffle(BUFFER_SIZE)
 train_dataset = train_dataset.padded_batch(BATCH_SIZE, train_dataset.output_shapes)
 test_dataset = test_dataset.padded_batch(BATCH_SIZE, test_dataset.output_shapes)
-# 1: 1 0r more LSTM layers
+# 1: 1 or more LSTM layers
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(tokenizer.vocab_size, 64),
     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64, return_sequences=True)),
