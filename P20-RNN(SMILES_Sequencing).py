@@ -9,6 +9,16 @@ from rdkit import Chem
 from rdkit.Chem import Draw, Descriptors
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+import tensorflow.keras as keras
+from keras.models import Model
+from keras.layers import Input
+from keras.layers import LSTM
+from keras.layers import Dense
+from keras.layers import Concatenate
+from keras import regularizers
+from keras.callbacks import History, ReduceLROnPlateau
+from sklearn.decomposition import PCA
+from keras.models import Sequential
 
 smifile = "gdb11_size08.smi"
 data = pd.read_csv(smifile, delimiter = "\t", names = ["smiles","No","Int"])
@@ -35,13 +45,6 @@ plt.matshow(X_train[0].T)
 
 print("".join([int_to_char[idx] for idx in np.argmax(X_train[0,:,:], axis=1)]))
 
-import tensorflow.keras as keras
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Dense
-from keras.layers import Concatenate
-from keras import regularizers
 input_shape = X_train.shape[1:]
 output_dim = Y_train.shape[-1]
 latent_dim = 64
@@ -73,7 +76,6 @@ decoder_outputs = decoder_dense(decoder_outputs)
 model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 print(model.summary())
 
-from keras.callbacks import History, ReduceLROnPlateau
 h = History()
 rlr = ReduceLROnPlateau(monitor='val_loss', factor=0.5,\
     patience=10, min_lr=0.000001, verbose=1, min_delta=1e-5)
@@ -141,7 +143,6 @@ Draw.MolsToImage(smiles_test.iloc[sorti[-8:]].apply(Chem.MolFromSmiles))
 
 logp = smiles_test.apply(Chem.MolFromSmiles).apply(Descriptors.MolLogP)
 
-from sklearn.decomposition import PCA
 pca = PCA(n_components = 2)
 red = pca.fit_transform(x_latent)
 plt.figure()
@@ -156,7 +157,6 @@ plt.scatter(red[:,0], red[:,1],marker='.', c= molwt)
 x_train_latent = smiles_to_latent_model.predict(X_train)
 logp_train = smiles_train.apply(Chem.MolFromSmiles).apply(Descriptors.MolLogP)
 
-from keras.models import Sequential
 logp_model = Sequential()
 logp_model.add(Dense(128, input_shape=(latent_dim,), activation="relu"))
 logp_model.add(Dense(128, activation="relu"))
